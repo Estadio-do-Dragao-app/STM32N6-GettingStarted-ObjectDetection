@@ -404,7 +404,7 @@ STAI_API_DECLARE_END
   }
 #define STAI_NETWORK_WEIGHTS_NAMES \
   { \
-    "Conv2D_7_weights", "Conv2D_13_weights", "Conv2D_19_weights", "Conv2D_25_weights", "Conv2D_31_weights", "Conv2D_37_weights", "Conv2D_43_weights", "Conv2D_48_weights", "Conv2D_52_weights", "Conv2D_43_mul_scale_57", "Conv2D_43_off_bias_62", "MaxPool_41_decomposed_pad_pad_kern_72" \
+    "Conv2D_7_weights", "Conv2D_13_weights", "Conv2D_19_weights", "Conv2D_25_weights", "Conv2D_31_weights", "Conv2D_37_weights", "Conv2D_43_weights", "Conv2D_48_weights", "Conv2D_52_weights", "Conv2D_43_mul_scale_57", "Conv2D_43_off_bias_62", "MaxPool_41_decomposed_pad_pad_kern_144" \
   }
 #define STAI_NETWORK_WEIGHTS_FORMATS \
   { \
@@ -691,7 +691,7 @@ STAI_API_DECLARE_END
   }
 
 #define STAI_NETWORK_WEIGHTS_12_ALIGNMENT (32)
-#define STAI_NETWORK_WEIGHTS_12_NAME "MaxPool_41_decomposed_pad_pad_kern_72"
+#define STAI_NETWORK_WEIGHTS_12_NAME "MaxPool_41_decomposed_pad_pad_kern_144"
 #define STAI_NETWORK_WEIGHTS_12_FLAGS (STAI_FLAG_PREALLOCATED|STAI_FLAG_CHANNEL_LAST)
 #define STAI_NETWORK_WEIGHTS_12_FORMAT (STAI_FORMAT_Q7)
 #define STAI_NETWORK_WEIGHTS_12_SIZE (512)

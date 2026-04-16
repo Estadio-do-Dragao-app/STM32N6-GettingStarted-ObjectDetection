@@ -19,15 +19,18 @@
 
 #include "app_postprocess.h"
 #include "app_config.h"
-#include <assert.h>
 
 #if POSTPROCESS_TYPE == POSTPROCESS_OD_SSD_UI
+#include <assert.h>
 #include "ssd_anchors.h"
 
 #define MODEL_OUTPUT_NB 2
 
+POSTPROCESS_WRAPPER_SECTION
 static od_pp_outBuffer_t out_detections[AI_OD_SSD_PP_TOTAL_DETECTIONS];
+POSTPROCESS_WRAPPER_SECTION
 static od_pp_outBuffer_t scratch_buffer[AI_OD_SSD_PP_TOTAL_DETECTIONS];
+POSTPROCESS_WRAPPER_SECTION
 static float32_t scratch_buffer_sm[AI_OD_SSD_PP_NB_CLASSES];
 /* will contain model output index ordered as follow: boxes, scores */
 static size_t output_order_index[MODEL_OUTPUT_NB];
@@ -36,6 +39,7 @@ int32_t app_postprocess_init(void *params_postprocess, stai_network_info *NN_Inf
 {
   int32_t error = AI_OD_POSTPROCESS_ERROR_NO;
 
+  assert(NN_Info);
   if (NN_Info->outputs[0].shape.data[1] == AI_OD_SSD_PP_NB_CLASSES) {
     output_order_index[0] = 1;
     output_order_index[1] = 0;

@@ -18,26 +18,26 @@
   */
 
 /*
- * GIT_SHA         "80369096c1c1b7ea4d6b2cc985d9e001f59b7c27"
- * GIT_BRANCH      "STAI-3.0"
- * GIT_DESCRIPTION "atonn-v1.1.3-8-g80369096"
+ * GIT_SHA         "7cc654104236b2ac726c804c5d7f201e2afd1c79"
+ * GIT_BRANCH      "STAI-4.0"
+ * GIT_DESCRIPTION "STAI-3.0.0-254-g7cc65410"
  *
  * Command Line options:
- * --load-mdesc-file = "/opt/ST/STEdgeAI/Utilities/configs/stm32n6"
- * --load-cdesc-file = "/opt/ST/STEdgeAI/Utilities/configs/cortex-m55"
- * --load-mpool-file = "/home/jenkins/agent/workspace/rted_ObjectDetection_ModelZoo_od/Model/my_mpools/stm32n6-app2_NUCLEO-N657X0-Q"
+ * --load-mdesc-file = "/opt/ST/STEdgeAI/4.0/Utilities/configs/stm32n6"
+ * --load-cdesc-file = "/opt/ST/STEdgeAI/4.0/Utilities/configs/cortex-m55"
+ * --load-mpool-file = "/home/rattingu/Workspace/STM32N6_GettingStarted_ObjectDetection/Model/my_mpools/stm32n6-app2_NUCLEO-N657X0-Q"
  * --cache-maintenance = true
  * --enable-virtual-mem-pools = true
  * --native-float = true
- * --json-quant-file = "/home/jenkins/agent/workspace/rted_ObjectDetection_ModelZoo_od/Model/st_ai_output/quantized_tiny_yolo_v2_224__OE_3_3_1_Q.json"
+ * --json-quant-file = "/home/rattingu/Workspace/STM32N6_GettingStarted_ObjectDetection/Model/st_ai_output/quantized_tiny_yolo_v2_224__OE_3_3_1_Q.json"
  * --optimization = 3
  * --Os = true
  * --Omax-ca-pipe = 4
  * --Ocache-opt = true
  * --enable-epoch-controller = true
  * --output-info-file = "c_info"
- * --onnx-input = "/home/jenkins/agent/workspace/rted_ObjectDetection_ModelZoo_od/Model/st_ai_output/quantized_tiny_yolo_v2_224__OE_3_3_1.onnx"
- * --out-dir-prefix = "/home/jenkins/agent/workspace/rted_ObjectDetection_ModelZoo_od/Model/st_ai_ws/neural_art__network/"
+ * --onnx-input = "/home/rattingu/Workspace/STM32N6_GettingStarted_ObjectDetection/Model/st_ai_output/quantized_tiny_yolo_v2_224__OE_3_3_1.onnx"
+ * --out-dir-prefix = "/home/rattingu/Workspace/STM32N6_GettingStarted_ObjectDetection/Model/st_ai_ws/neural_art__network/"
  * --network-name = "network"
  * --all-buffers-info = true
  * --generate-stai = true
@@ -55,7 +55,7 @@
 #include "ecloader.h"
 #include "ll_aton_cipher.h"
 
-#if LL_ATON_VERSION_MAJOR != 1 || LL_ATON_VERSION_MINOR != 1 || LL_ATON_VERSION_MICRO != 3 || LL_ATON_VERSION_DEV != 8
+#if LL_ATON_VERSION_MAJOR != 1 || LL_ATON_VERSION_MINOR != 1 || LL_ATON_VERSION_MICRO != 3 || LL_ATON_VERSION_DEV != 262
 #  error "Possible mismatch in ll_aton library used"
 #endif
 
@@ -64,7 +64,7 @@
 #endif
 
 /* global pool 7 is 10.54 MB */
-/* index=7 file postfix=xSPI2 name=octoFlash offset=0x70380000  absolute_mode size=63963128 READ_ONLY THROUGHPUT=MID LATENCY=HIGH byte width=1 freq ratio=6 burst max length=MAXINT burst penalty=0 pipelined=ON cacheable=ON read_power=110 write_power=400 use4initializers=YES score=50  */
+/* index=7 file postfix=xSPI2 name=octoFlash offset=0x70380000  absolute_mode size=16777208 READ_ONLY THROUGHPUT=MID LATENCY=HIGH byte width=1 freq ratio=6 burst max length=MAXINT burst penalty=0 pipelined=ON cacheable=ON read_power=110 write_power=400 use4initializers=YES score=50  */
 /* global pool 1 is 343.00 KB */
 /* index=1 file postfix=AXISRAM5 name=npuRAM5 offset=0x342e0000  absolute_mode size=458752 READ_WRITE THROUGHPUT=HIGH LATENCY=LOW byte width=8 freq ratio=1.25 burst max length=MAXINT burst penalty=0 pipelined=ON cacheable=OFF read_power=18.531 write_power=16.201 use4initializers=NO score=94  */
 /* global pool 2 is ? */
@@ -103,6 +103,10 @@ const LL_Streng_EncryptionTypedef *LL_ATON_BlobEncryption_Info_network()
 
 LL_ATON_User_IO_Result_t LL_ATON_Set_User_Input_Buffer_network(uint32_t num, void* buffer, uint32_t size)
 {
+  LL_ATON_LIB_UNUSED(num);
+  LL_ATON_LIB_UNUSED(buffer);
+  LL_ATON_LIB_UNUSED(size);
+
   { 
     return LL_ATON_User_IO_WRONG_INDEX;
   }
@@ -110,6 +114,8 @@ LL_ATON_User_IO_Result_t LL_ATON_Set_User_Input_Buffer_network(uint32_t num, voi
 
 void *LL_ATON_Get_User_Input_Buffer_network(uint32_t num)
 {
+  LL_ATON_LIB_UNUSED(num);
+
   { 
     return NULL;
   }
@@ -117,6 +123,10 @@ void *LL_ATON_Get_User_Input_Buffer_network(uint32_t num)
 
 LL_ATON_User_IO_Result_t LL_ATON_Set_User_Output_Buffer_network(uint32_t num, void* buffer, uint32_t size)
 {
+  LL_ATON_LIB_UNUSED(num);
+  LL_ATON_LIB_UNUSED(buffer);
+  LL_ATON_LIB_UNUSED(size);
+
   { 
     return LL_ATON_User_IO_WRONG_INDEX;
   }
@@ -124,6 +134,8 @@ LL_ATON_User_IO_Result_t LL_ATON_Set_User_Output_Buffer_network(uint32_t num, vo
 
 void *LL_ATON_Get_User_Output_Buffer_network(uint32_t num)
 {
+  LL_ATON_LIB_UNUSED(num);
+
   { 
     return NULL;
   }
@@ -136,8 +148,9 @@ void *LL_ATON_Get_User_Output_Buffer_network(uint32_t num)
 // Epoch Controller Blob (name='_ec_blob_network_1') micro instructions needed
 
 // Epoch Controller Blob (name='_ec_blob_network_1') start function
-static void _ec_blob_cache_start_func_1(const void *epoch_block) {
+static void _ec_blob_cache_start_func_1(const LL_ATON_RT_EpochBlockItem_t *epoch_block, const NN_Instance_TypeDef *nn_instance) {
   LL_ATON_LIB_UNUSED(epoch_block);
+  LL_ATON_LIB_UNUSED(nn_instance);
 
   /* *** MCU cache invalidate (only) operation (HW, whole range) *** */
   /*     memory pool: 1 */
@@ -150,9 +163,9 @@ static void _ec_blob_cache_start_func_1(const void *epoch_block) {
 
 /* scheduling DONE                 ------------------------------------------------------------------- */
 
-const EpochBlock_ItemTypeDef *LL_ATON_EpochBlockItems_network(void) {
+const LL_ATON_RT_EpochBlockItem_t *LL_ATON_EpochBlockItems_network(void) {
 
-  static const EpochBlock_ItemTypeDef ll_atonn_rt_epoch_block_array[] = {
+  static const LL_ATON_RT_EpochBlockItem_t ll_atonn_rt_epoch_block_array[] = {
     {
       .start_epoch_block = _ec_blob_cache_start_func_1,
       .end_epoch_block = NULL,
@@ -508,7 +521,7 @@ const LL_Buffer_InfoTypeDef *LL_ATON_Input_Buffers_Info_network(void)
       .shape = buff_info__shape_1024_1_7,
     },
     {
-      .name = "MaxPool_41_decomposed_pad_pad_kern_72",
+      .name = "MaxPool_41_decomposed_pad_pad_kern_144",
       .addr_base = {(unsigned char *)(0x70380000UL) /* Equivalent hex address = 0x70380000UL */},
       .offset_start = 11052544,
       .offset_end = 11053056,

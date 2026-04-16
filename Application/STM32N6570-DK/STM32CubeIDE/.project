@@ -51,26 +51,6 @@
 			<type>1</type>
 			<locationURI>PARENT-1-PROJECT_LOC/Src/app_fuseprogramming.c</locationURI>
 		</link>
-    <link>
-      <name>Application/app_postprocess_fd_blazeface_ui.c</name>
-      <type>1</type>
-      <locationURI>PARENT-3-PROJECT_LOC/Middlewares/ai-postprocessing-wrapper/app_postprocess_fd_blazeface_ui.c</locationURI>
-    </link>
-		<link>
-			<name>Application/app_postprocess_iseg_yolo_v8_ui.c</name>
-			<type>1</type>
-			<locationURI>PARENT-3-PROJECT_LOC/Middlewares/ai-postprocessing-wrapper/app_postprocess_iseg_yolo_v8_ui.c</locationURI>
-		</link>
-		<link>
-			<name>Application/app_postprocess_mpe_pd_uf.c</name>
-			<type>1</type>
-			<locationURI>PARENT-3-PROJECT_LOC/Middlewares/ai-postprocessing-wrapper/app_postprocess_mpe_pd_uf.c</locationURI>
-		</link>
-		<link>
-			<name>Application/app_postprocess_mpe_yolo_v8_ui.c</name>
-			<type>1</type>
-			<locationURI>PARENT-3-PROJECT_LOC/Middlewares/ai-postprocessing-wrapper/app_postprocess_mpe_yolo_v8_ui.c</locationURI>
-		</link>
 		<link>
 			<name>Application/app_postprocess_od_ssd_ui.c</name>
 			<type>1</type>
@@ -105,16 +85,6 @@
 			<name>Application/app_postprocess_od_blazeface_ui.c</name>
 			<type>1</type>
 			<locationURI>PARENT-3-PROJECT_LOC/Middlewares/ai-postprocessing-wrapper/app_postprocess_od_blazeface_ui.c</locationURI>
-		</link>
-		<link>
-			<name>Application/app_postprocess_spe_movenet_ui.c</name>
-			<type>1</type>
-			<locationURI>PARENT-3-PROJECT_LOC/Middlewares/ai-postprocessing-wrapper/app_postprocess_spe_movenet_ui.c</locationURI>
-		</link>
-		<link>
-			<name>Application/app_postprocess_sseg_deeplab_v3_ui.c</name>
-			<type>1</type>
-			<locationURI>PARENT-3-PROJECT_LOC/Middlewares/ai-postprocessing-wrapper/app_postprocess_sseg_deeplab_v3_ui.c</locationURI>
 		</link>
 		<link>
 			<name>Application/crop_img.c</name>
@@ -215,6 +185,16 @@
 			<name>stm32-vision-models-postprocessing/od_pp_blazeface.c</name>
 			<type>1</type>
 			<locationURI>PARENT-3-PROJECT_LOC/Middlewares/stm32-vision-models-postprocessing/lib_vision_models_pp/Src/od_pp_blazeface.c</locationURI>
+		</link>
+		<link>
+			<name>stm32-vision-models-postprocessing/od_pp_centernet.c</name>
+			<type>1</type>
+			<locationURI>PARENT-3-PROJECT_LOC/Middlewares/stm32-vision-models-postprocessing/lib_vision_models_pp/Src/od_pp_centernet.c</locationURI>
+		</link>
+		<link>
+			<name>stm32-vision-models-postprocessing/od_pp_yolov4.c</name>
+			<type>1</type>
+			<locationURI>PARENT-3-PROJECT_LOC/Middlewares/stm32-vision-models-postprocessing/lib_vision_models_pp/Src/od_pp_yolov4.c</locationURI>
 		</link>
 		<link>
 			<name>ll_aton/ll_aton.c</name>

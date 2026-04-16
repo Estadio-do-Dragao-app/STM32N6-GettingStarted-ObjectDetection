@@ -19,9 +19,11 @@
 
 #include "app_postprocess.h"
 #include "app_config.h"
-#include <assert.h>
 
 #if POSTPROCESS_TYPE == POSTPROCESS_OD_ST_YOLOD_UI
+#include <assert.h>
+
+POSTPROCESS_WRAPPER_SECTION
 static od_pp_outBuffer_t out_detections[(AI_OD_YOLO_D_PP_IMG_WIDTH / AI_OD_YOLO_D_PP_STRIDE_0) * ( AI_OD_YOLO_D_PP_IMG_HEIGHT / AI_OD_YOLO_D_PP_STRIDE_0)
                                       + (AI_OD_YOLO_D_PP_IMG_WIDTH / AI_OD_YOLO_D_PP_STRIDE_1) * ( AI_OD_YOLO_D_PP_IMG_HEIGHT / AI_OD_YOLO_D_PP_STRIDE_1)
                                       + (AI_OD_YOLO_D_PP_IMG_WIDTH / AI_OD_YOLO_D_PP_STRIDE_2) * ( AI_OD_YOLO_D_PP_IMG_HEIGHT / AI_OD_YOLO_D_PP_STRIDE_2)];

@@ -74,6 +74,10 @@ extern "C"
 #define POSTPROCESS_FD_YUNET_UI         (501)  /* Yunet postprocessing; Input model: uint8; output: int8             */
 #define POSTPROCESS_CUSTOM              (1000) /* Custom post processing which needs to be implemented by user       */
 
+#ifndef POSTPROCESS_WRAPPER_SECTION
+  #define POSTPROCESS_WRAPPER_SECTION
+#endif
+
 /* Exported functions ------------------------------------------------------- */
 int32_t app_postprocess_init(void *params_postprocess, stai_network_info *NN_Info);
 int32_t app_postprocess_run(void *pInput[], int nb_input, void *pOutput, void *pInput_param);
