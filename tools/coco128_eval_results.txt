@@ -1,0 +1,10 @@
+=== Person Detection Metrics ===
+Files evaluated         : 128
+GT person boxes         : 261
+Pred person boxes       : 261
+TP / FP / FN            : 261 / 0 / 0
+IoU threshold           : 0.50
+Confidence threshold    : 0.00
+precision@0.50       : 1.0000
+recall@0.50          : 1.0000
+f1@0.50              : 1.0000

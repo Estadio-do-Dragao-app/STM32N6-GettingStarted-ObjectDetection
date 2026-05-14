@@ -67,7 +67,7 @@ This README provides an overview of the application. Additional documentation is
 
 | Model | Board | Inference time |
 | :---- | :---- | -------------: |
-| st_yolo_x_nano_480_1.0_0.25_3_st_int8.tflite | STM32N6570-DK | 29 ms |
+| ssdlite_mobilenetv3small_pt_coco_person_300_qdq_int8 | STM32N6570-DK | ~29-35 ms (project dependent) |
 | quantized_tiny_yolo_v2_224_.tflite | NUCLEO-N657X0-Q SPI | 30 ms |
 | quantized_tiny_yolo_v2_224_.tflite | NUCLEO-N657X0-Q UVCL | 27 ms |
 

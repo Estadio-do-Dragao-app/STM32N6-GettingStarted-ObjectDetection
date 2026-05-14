@@ -31,40 +31,34 @@
 #define ASPECT_RATIO_FULLSCREEN (3) /* Resize camera image to NN input size and display a maximized image. See Doc/Build-Options.md#aspect-ratio-mode */
 #define ASPECT_RATIO_MODE ASPECT_RATIO_CROP
 
-/* Model Related Info */
-#define POSTPROCESS_TYPE    POSTPROCESS_OD_ST_YOLOX_UI
-
+/* Color mode */
 #define COLOR_BGR (0)
 #define COLOR_RGB (1)
 #define COLOR_MODE    COLOR_RGB
 
 /* Classes */
 #define NB_CLASSES   (1)
-#define CLASSES_TABLE const char* classes_table[NB_CLASSES] = {\
-   "person"}\
+#define CLASSES_TABLE const char* classes_table[NB_CLASSES] = {"person"}
 
-/* I/O configuration */
-/* Postprocessing ST_YOLO_X configuration */
-#define AI_OD_ST_YOLOX_PP_NB_CLASSES        (1)
-#define AI_OD_ST_YOLOX_PP_L_GRID_WIDTH      (60)
-#define AI_OD_ST_YOLOX_PP_L_GRID_HEIGHT     (60)
-#define AI_OD_ST_YOLOX_PP_L_NB_INPUT_BOXES  (AI_OD_ST_YOLOX_PP_L_GRID_WIDTH * AI_OD_ST_YOLOX_PP_L_GRID_HEIGHT)
-#define AI_OD_ST_YOLOX_PP_M_GRID_WIDTH      (30)
-#define AI_OD_ST_YOLOX_PP_M_GRID_HEIGHT     (30)
-#define AI_OD_ST_YOLOX_PP_M_NB_INPUT_BOXES  (AI_OD_ST_YOLOX_PP_M_GRID_WIDTH * AI_OD_ST_YOLOX_PP_M_GRID_HEIGHT)
-#define AI_OD_ST_YOLOX_PP_S_GRID_WIDTH      (15)
-#define AI_OD_ST_YOLOX_PP_S_GRID_HEIGHT     (15)
-#define AI_OD_ST_YOLOX_PP_S_NB_INPUT_BOXES  (AI_OD_ST_YOLOX_PP_S_GRID_WIDTH * AI_OD_ST_YOLOX_PP_S_GRID_HEIGHT)
-#define AI_OD_ST_YOLOX_PP_NB_ANCHORS        (3)
-static const float32_t AI_OD_ST_YOLOX_PP_L_ANCHORS[2*AI_OD_ST_YOLOX_PP_NB_ANCHORS] = {30.000000, 30.000000, 4.200000, 15.000000, 13.800000, 41.999999};
-static const float32_t AI_OD_ST_YOLOX_PP_M_ANCHORS[2*AI_OD_ST_YOLOX_PP_NB_ANCHORS] = {15.000000, 15.000000, 2.100000, 7.500000, 6.900000, 21.000000};
-static const float32_t AI_OD_ST_YOLOX_PP_S_ANCHORS[2*AI_OD_ST_YOLOX_PP_NB_ANCHORS] = {7.500000, 7.500000, 1.050000, 3.750000, 3.450000, 10.500000};
-#define AI_OD_ST_YOLOX_PP_IOU_THRESHOLD      (0.5)
-#define AI_OD_ST_YOLOX_PP_CONF_THRESHOLD     (0.6)
-#define AI_OD_ST_YOLOX_PP_MAX_BOXES_LIMIT    (100)
+/* SSD post-processing */
+#define APP_SSDLITE_PRIOR_COUNT  3000
+#define APP_SSDLITE_CONF_THRESH  0.20f
+#define APP_SSDLITE_NMS_IOU      0.40f
+#define APP_SSDLITE_MAX_DETS     64
+#define APP_GRID_MAX_POINTS      64
+
+/* MQTT / UART-bridge config */
+#define APP_CAMERA_ID          "CAM_REAL_001"
+#define APP_LEVEL              0
+#define APP_COORDINATE_UNIT    "pixels"
+#define APP_WAIT_TIME_SEC      0
+#define APP_MQTT_BROKER_IP     "192.168.1.10"
+#define APP_MQTT_BROKER_PORT   1883
+#define APP_MQTT_TOPIC_CONGEST "stadium/events/congestion"
+#define APP_JSON_MAX_LEN       2048
 
 /* Display */
-#define WELCOME_MSG_1         "st_yolo_x_nano_480_1.0_0.25_3_st_int8.tflite"
-#define WELCOME_MSG_2         "Model Running in STM32 MCU internal memory"
+#define WELCOME_MSG_1         "SSDLite MobileNetV3-Small 300x300 int8"
+#define WELCOME_MSG_2         "Person Detection + MQTT"
 
 #endif

@@ -1,0 +1,6 @@
+images_processed=128
+total_pred_boxes=128
+pred_dir=/media/bernardo-martins/DockerData/PEI/Dragao-app/STM32N6-GettingStarted-ObjectDetection/tools/coco128_preds_ssdlite
+model=/media/bernardo-martins/DockerData/PEI/Dragao-app/ssdlite_mobilenetv3small_pt_coco_person_300_qdq_int8.onnx-STM32MP257F-DK-code/ssdlite_mobilenetv3small_pt_coco_person_300_qdq_int8_OE_3_3_1.onnx
+conf_threshold=0.30
+nms_iou=0.45

@@ -26,7 +26,6 @@
 #include "stm32_lcd.h"
 #include "app_fuseprogramming.h"
 #include "stm32_lcd_ex.h"
-#include "app_postprocess.h"
 #include "stai.h"
 #include "stai_network.h"
 #include "app_camerapipeline.h"
@@ -35,6 +34,8 @@
 #include "app_config.h"
 #include "crop_img.h"
 #include "stlogo.h"
+#include "ssd_postprocess.h"
+#include "mqtt_publisher.h"
 
 CLASSES_TABLE;
 
@@ -92,30 +93,19 @@ const uint32_t colors[NUMBER_COLORS] = {
     UTIL_LCD_COLOR_ORANGE
 };
 
-#if POSTPROCESS_TYPE == POSTPROCESS_OD_YOLO_V2_UI
-  od_yolov2_pp_static_param_t pp_params;
-#elif POSTPROCESS_TYPE == POSTPROCESS_OD_YOLO_V5_UU
-  od_yolov5_pp_static_param_t pp_params;
-#elif POSTPROCESS_TYPE == POSTPROCESS_OD_YOLO_V8_UI
-  od_yolov8_pp_static_param_t pp_params;
-#elif POSTPROCESS_TYPE == POSTPROCESS_OD_ST_YOLOX_UI
-  od_st_yolox_pp_static_param_t pp_params;
-#elif POSTPROCESS_TYPE == POSTPROCESS_OD_SSD_UI
-  od_ssd_pp_static_param_t pp_params;
-#elif POSTPROCESS_TYPE == POSTPROCESS_OD_ST_YOLOD_UI
-  od_yolo_d_pp_static_param_t pp_params;
-#elif POSTPROCESS_TYPE == POSTPROCESS_OD_BLAZEFACE_UI
-  od_blazeface_pp_static_param_t pp_params;
-#else
-  #error "PostProcessing type not supported"
-#endif
-
 UART_HandleTypeDef huart1;
 volatile int32_t cameraFrameReceived;
 stai_ptr nn_in;
 BSP_LCD_LayerConfig_t LayerConfig = {0};
-void* pp_input;
-od_pp_out_t pp_output;
+
+/* SSD post-processing outputs */
+static ssd_det_t    g_dets[APP_SSDLITE_MAX_DETS];
+static grid_point_t g_grid[APP_GRID_MAX_POINTS];
+static uint32_t     g_det_count;
+static uint32_t     g_grid_count;
+static uint32_t     g_frame_count = 0;
+static float        g_ema_inference_ms = 0.0f;
+static float        g_ema_fps = 0.0f;
 
 #define ALIGN_TO_16(value) (((value) + 15) & ~15)
 
@@ -147,7 +137,8 @@ static void SystemClock_Config(void);
 static void CONSOLE_Config(void);
 static void NPURam_enable(void);
 static void NPUCache_config(void);
-static void Display_NetworkOutput(od_pp_out_t *p_postprocess, uint32_t inference_ms);
+static void hwc_u8_to_chw_s8(const uint8_t *hwc_src, uint32_t stride, int8_t *chw_dst, uint32_t w, uint32_t h, uint32_t c);
+static void Display_NetworkOutput(uint32_t nb_dets, const ssd_det_t *dets, uint32_t inference_ms);
 static void LCD_init(void);
 static void Security_Config(void);
 static void set_clk_sleep_mode(void);
@@ -155,6 +146,7 @@ static void IAC_Config(void);
 static void Display_WelcomeScreen(void);
 static void Hardware_init(void);
 static void NeuralNetwork_init(uint32_t *nn_in_length, stai_ptr *nn_out, stai_size *number_output, int32_t nn_out_len[]);
+static float Compute_Avg_Confidence(const ssd_det_t *dets, uint32_t det_count);
 
 
 /**
@@ -175,12 +167,10 @@ int main(void)
   NeuralNetwork_init(&nn_in_len, nn_out, &number_output, nn_out_len);
 
   /*** Post Processing Init ***************************************************/
-  stai_network_info info;
   int ret;
 
-  ret = stai_network_get_info(network_context, &info);
-  assert(ret == STAI_SUCCESS);
-  app_postprocess_init(&pp_params, &info);
+  ssd_post_init();
+  mqtt_pub_init();
 
   /*** Camera Init ************************************************************/
   uint32_t pitch_nn = 0;
@@ -231,7 +221,8 @@ int main(void)
      * multiples of 16, so we crop the padded buffer into the NN input buffer.
      */
     SCB_InvalidateDCache_by_Addr(dcmipp_out_nn, sizeof(dcmipp_out_nn));
-    img_crop(dcmipp_out_nn, nn_in, pitch_nn, STAI_NETWORK_IN_1_WIDTH, STAI_NETWORK_IN_1_HEIGHT, STAI_NETWORK_IN_1_CHANNEL);
+    hwc_u8_to_chw_s8(dcmipp_out_nn, pitch_nn, (int8_t *)nn_in,
+                     STAI_NETWORK_IN_1_WIDTH, STAI_NETWORK_IN_1_HEIGHT, STAI_NETWORK_IN_1_CHANNEL);
     SCB_CleanInvalidateDCache_by_Addr(nn_in, nn_in_len);
 #endif
 
@@ -241,10 +232,37 @@ int main(void)
     assert(ret == 0);
     ts[1] = HAL_GetTick();
 
-    int32_t ret = app_postprocess_run((void **) nn_out, number_output, &pp_output, &pp_params);
-    assert(ret == 0);
+    g_det_count = ssd_post_process((const int8_t *)nn_out[0], (const int8_t *)nn_out[1],
+                                    lcd_bg_area.XSize, lcd_bg_area.YSize,
+                                    g_dets, APP_SSDLITE_MAX_DETS);
+    g_grid_count = ssd_build_grid_from_dets(g_dets, g_det_count, g_grid, APP_GRID_MAX_POINTS);
+    const uint32_t inference_ms = ts[1] - ts[0];
+    const float avg_confidence = Compute_Avg_Confidence(g_dets, g_det_count);
+    const float current_fps = (inference_ms > 0U) ? (1000.0f / (float)inference_ms) : 0.0f;
 
-    Display_NetworkOutput(&pp_output, ts[1] - ts[0]);
+    if (g_frame_count == 0U) {
+      g_ema_inference_ms = (float)inference_ms;
+      g_ema_fps = current_fps;
+    } else {
+      g_ema_inference_ms = (0.90f * g_ema_inference_ms) + (0.10f * (float)inference_ms);
+      g_ema_fps = (0.90f * g_ema_fps) + (0.10f * current_fps);
+    }
+    g_frame_count++;
+
+    if ((g_frame_count % 30U) == 0U) {
+      printf("METRICS:{\"frame\":%lu,\"det_count\":%lu,\"inf_ms\":%lu,\"fps\":%.2f,\"ema_inf_ms\":%.2f,\"ema_fps\":%.2f,\"avg_conf\":%.3f}\r\n",
+             (unsigned long)g_frame_count,
+             (unsigned long)g_det_count,
+             (unsigned long)inference_ms,
+             (double)current_fps,
+             (double)g_ema_inference_ms,
+             (double)g_ema_fps,
+             (double)avg_confidence);
+    }
+
+    mqtt_pub_crowd_density(g_det_count, g_grid, g_grid_count, inference_ms, avg_confidence);
+
+    Display_NetworkOutput(g_det_count, g_dets, inference_ms);
     /* Discard nn_out region (used by pp_input and pp_outputs variables) to avoid Dcache evictions during nn inference */
     for (int i = 0; i < number_output; i++)
     {
@@ -252,6 +270,19 @@ int main(void)
       SCB_InvalidateDCache_by_Addr(tmp, nn_out_len[i]);
     }
   }
+}
+
+static float Compute_Avg_Confidence(const ssd_det_t *dets, uint32_t det_count)
+{
+  if (!dets || det_count == 0U) {
+    return 0.0f;
+  }
+
+  float sum = 0.0f;
+  for (uint32_t i = 0; i < det_count; i++) {
+    sum += dets[i].score;
+  }
+  return sum / (float)det_count;
 }
 
 
@@ -330,6 +361,28 @@ static void NeuralNetwork_init(uint32_t *nn_in_length, stai_ptr *nn_out, stai_si
   for (int i = 0; i < *number_output; i++)
   {
     nn_out_len[i] = info.outputs[i].size_bytes;
+  }
+}
+
+/**
+ * @brief Convert uint8 HWC image to int8 CHW format required by the SSD model.
+ *        DCMIPP outputs RGB888 in HWC layout (stride may include padding).
+ *        The model expects int8 CHW with values = uint8 - 128.
+ */
+static void hwc_u8_to_chw_s8(const uint8_t *hwc_src, uint32_t stride,
+                               int8_t *chw_dst, uint32_t w, uint32_t h, uint32_t c)
+{
+  uint32_t plane = w * h;
+  for (uint32_t row = 0; row < h; row++)
+  {
+    const uint8_t *src_row = hwc_src + row * stride;
+    for (uint32_t col = 0; col < w; col++)
+    {
+      for (uint32_t ch = 0; ch < c; ch++)
+      {
+        chw_dst[ch * plane + row * w + col] = (int8_t)(src_row[col * c + ch] - 128u);
+      }
+    }
   }
 }
 
@@ -428,36 +481,32 @@ void IAC_IRQHandler(void)
 * @param p_postprocess pointer to postprocessing output
 * @param inference_ms inference time in ms
 */
-static void Display_NetworkOutput(od_pp_out_t *p_postprocess, uint32_t inference_ms)
+static void Display_NetworkOutput(uint32_t nb_dets, const ssd_det_t *dets, uint32_t inference_ms)
 {
-
-  od_pp_outBuffer_t *rois = p_postprocess->pOutBuff;
-  uint32_t nb_rois = p_postprocess->nb_detect;
   int ret;
 
   ret = HAL_LTDC_SetAddress_NoReload(&hlcd_ltdc, (uint32_t) lcd_fg_buffer[lcd_fg_buffer_rd_idx], LTDC_LAYER_2);
   assert(ret == HAL_OK);
 
   /* Draw bounding boxes */
-  UTIL_LCD_FillRect(lcd_fg_area.X0, lcd_fg_area.Y0, lcd_fg_area.XSize, lcd_fg_area.YSize, 0x00000000); /* Clear previous boxes */
-  for (int32_t i = 0; i < nb_rois; i++)
+  UTIL_LCD_FillRect(lcd_fg_area.X0, lcd_fg_area.Y0, lcd_fg_area.XSize, lcd_fg_area.YSize, 0x00000000);
+  for (uint32_t i = 0; i < nb_dets; i++)
   {
-    uint32_t x0 = (uint32_t) ((rois[i].x_center - rois[i].width / 2) * ((float32_t) lcd_bg_area.XSize)) + lcd_bg_area.X0;
-    uint32_t y0 = (uint32_t) ((rois[i].y_center - rois[i].height / 2) * ((float32_t) lcd_bg_area.YSize));
-    uint32_t width = (uint32_t) (rois[i].width * ((float32_t) lcd_bg_area.XSize));
-    uint32_t height = (uint32_t) (rois[i].height * ((float32_t) lcd_bg_area.YSize));
-    /* Draw boxes without going outside of the image to avoid clearing the text area to clear the boxes */
-    x0 = x0 < lcd_bg_area.X0 + lcd_bg_area.XSize ? x0 : lcd_bg_area.X0 + lcd_bg_area.XSize - 1;
-    y0 = y0 < lcd_bg_area.Y0 + lcd_bg_area.YSize ? y0 : lcd_bg_area.Y0 + lcd_bg_area.YSize  - 1;
-    width = ((x0 + width) < lcd_bg_area.X0 + lcd_bg_area.XSize) ? width : (lcd_bg_area.X0 + lcd_bg_area.XSize - x0 - 1);
+    uint32_t x0 = (uint32_t)(dets[i].x1 * (float32_t)lcd_bg_area.XSize) + lcd_bg_area.X0;
+    uint32_t y0 = (uint32_t)(dets[i].y1 * (float32_t)lcd_bg_area.YSize);
+    uint32_t width  = (uint32_t)((dets[i].x2 - dets[i].x1) * (float32_t)lcd_bg_area.XSize);
+    uint32_t height = (uint32_t)((dets[i].y2 - dets[i].y1) * (float32_t)lcd_bg_area.YSize);
+    x0     = x0 < lcd_bg_area.X0 + lcd_bg_area.XSize ? x0 : lcd_bg_area.X0 + lcd_bg_area.XSize - 1;
+    y0     = y0 < lcd_bg_area.Y0 + lcd_bg_area.YSize ? y0 : lcd_bg_area.Y0 + lcd_bg_area.YSize - 1;
+    width  = ((x0 + width)  < lcd_bg_area.X0 + lcd_bg_area.XSize) ? width  : (lcd_bg_area.X0 + lcd_bg_area.XSize - x0 - 1);
     height = ((y0 + height) < lcd_bg_area.Y0 + lcd_bg_area.YSize) ? height : (lcd_bg_area.Y0 + lcd_bg_area.YSize - y0 - 1);
-    UTIL_LCD_DrawRect(x0, y0, width, height, colors[rois[i].class_index % NUMBER_COLORS]);
-    UTIL_LCDEx_PrintfAt(x0, y0, LEFT_MODE, classes_table[rois[i].class_index]);
-    UTIL_LCDEx_PrintfAt(-x0-width, y0, RIGHT_MODE, "%.0f%%", rois[i].conf*100.0f);
+    UTIL_LCD_DrawRect(x0, y0, width, height, colors[0]); /* class 0 = person, always green */
+    UTIL_LCDEx_PrintfAt(x0, y0, LEFT_MODE, "person");
+    UTIL_LCDEx_PrintfAt(-(int32_t)(x0 + width), y0, RIGHT_MODE, "%.0f%%", dets[i].score * 100.0f);
   }
 
   UTIL_LCD_SetBackColor(0x40000000);
-  UTIL_LCDEx_PrintfAt(0, LINE(2), CENTER_MODE, "Objects %u", nb_rois);
+  UTIL_LCDEx_PrintfAt(0, LINE(2), CENTER_MODE, "Objects %lu", nb_dets);
   UTIL_LCDEx_PrintfAt(0, LINE(20), CENTER_MODE, "Inference: %ums", inference_ms);
   UTIL_LCD_SetBackColor(0);
 

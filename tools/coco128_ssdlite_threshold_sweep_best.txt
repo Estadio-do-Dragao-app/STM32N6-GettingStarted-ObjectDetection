@@ -1,0 +1,4 @@
+Top thresholds by F1
+conf=0.30 p=0.5391 r=0.2644 f1=0.3548 tp=69 fp=59 fn=192 pred=128
+conf=0.20 p=0.4202 r=0.3027 f1=0.3519 tp=79 fp=109 fn=182 pred=190
+conf=0.25 p=0.4800 r=0.2759 f1=0.3504 tp=72 fp=78 fn=189 pred=152

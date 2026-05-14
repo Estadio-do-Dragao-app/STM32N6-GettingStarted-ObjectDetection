@@ -92,6 +92,16 @@
 			<locationURI>PARENT-1-PROJECT_LOC/Src/crop_img.c</locationURI>
 		</link>
 		<link>
+			<name>Application/ssd_postprocess.c</name>
+			<type>1</type>
+			<locationURI>PARENT-1-PROJECT_LOC/Src/ssd_postprocess.c</locationURI>
+		</link>
+		<link>
+			<name>Application/mqtt_publisher.c</name>
+			<type>1</type>
+			<locationURI>PARENT-1-PROJECT_LOC/Src/mqtt_publisher.c</locationURI>
+		</link>
+		<link>
 			<name>Application/main.c</name>
 			<type>1</type>
 			<locationURI>PARENT-1-PROJECT_LOC/Src/main.c</locationURI>

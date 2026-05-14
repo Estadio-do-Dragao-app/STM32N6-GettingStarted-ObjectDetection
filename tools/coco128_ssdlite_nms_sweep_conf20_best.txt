@@ -1,0 +1,6 @@
+Top NMS IoU by F1 (conf=0.20)
+nms_iou=0.40 p=0.4407 r=0.2989 f1=0.3562 tp=78 fp=99 fn=183 pred=179
+nms_iou=0.45 p=0.4202 r=0.3027 f1=0.3519 tp=79 fp=109 fn=182 pred=190
+nms_iou=0.35 p=0.4393 r=0.2912 f1=0.3502 tp=76 fp=97 fn=185 pred=175
+nms_iou=0.30 p=0.4458 r=0.2835 f1=0.3466 tp=74 fp=92 fn=187 pred=168
+nms_iou=0.50 p=0.4031 r=0.3027 f1=0.3457 tp=79 fp=117 fn=182 pred=198
